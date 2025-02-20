@@ -5,3 +5,4 @@ umap-learn
 scikit-learn
 gprofiler-official
 plotly
+cupy
