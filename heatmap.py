@@ -3,10 +3,12 @@ verification_code = "AB80dK3JTBXnG1NrBiN63vvm5LFqF6hlYeAocH2QCd8"
 
 st.markdown(f"""
 <script>
+   (function() {{
     var meta = document.createElement('meta');
     meta.name = 'google-site-verification';
     meta.content = '{verification_code}';
     document.head.appendChild(meta);
+}})();
 </script>
 """, unsafe_allow_html=True)
 import pandas as pd
