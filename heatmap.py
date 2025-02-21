@@ -7,6 +7,17 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
 })(window,document,'script','dataLayer','GTM-P8FDLQQB');</script>
 <!-- End Google Tag Manager -->
+<script>
+  // Remove any existing GTM script with the old ID
+  (function() {
+    var scripts = document.getElementsByTagName('script');
+    for (var i = scripts.length - 1; i >= 0; i--) {
+      if (scripts[i].src && scripts[i].src.includes('GTM-52GRQSL')) {
+        scripts[i].parentNode.removeChild(scripts[i]);
+      }
+    }
+  })();
+</script>
 """
 
 st.markdown(gtm_code, unsafe_allow_html=True)
