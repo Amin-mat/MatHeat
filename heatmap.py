@@ -315,6 +315,7 @@ class MatHeatmap:
             Welcome to MatHeat! This application was developed by Seyyed Amin Seyyed Rezaei with a passion for 
             bridging computational techniques and biological data analysis. Here you can generate 
             advanced gene expression heatmaps, perform clustering, and run pathway analyses.
+            Keywords: MatHeat, heatmap generator, gene expression, bioinformatics.
             """)
             st.image("https://via.placeholder.com/300x200.png?text=Your+Photo", caption="Your Name")
             st.write("For more about my work and background, please visit https://scholar.google.com/citations?user=pOLJKt4AAAAJ&hl=en.")
