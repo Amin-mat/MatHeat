@@ -1,5 +1,8 @@
 import streamlit as st
-gtm_code = """
+import streamlit.components.v1 as components
+
+components.html("""
+<head>
 <!-- Google Tag Manager -->
 <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
 new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
@@ -7,20 +10,8 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
 })(window,document,'script','dataLayer','GTM-P8FDLQQB');</script>
 <!-- End Google Tag Manager -->
-<script>
-  // Remove any existing GTM script with the old ID
-  (function() {
-    var scripts = document.getElementsByTagName('script');
-    for (var i = scripts.length - 1; i >= 0; i--) {
-      if (scripts[i].src && scripts[i].src.includes('GTM-52GRQSL')) {
-        scripts[i].parentNode.removeChild(scripts[i]);
-      }
-    }
-  })();
-</script>
-"""
-
-st.markdown(gtm_code, unsafe_allow_html=True)
+</head>
+""", height=0)
 import pandas as pd
 import numpy as np
 import json
