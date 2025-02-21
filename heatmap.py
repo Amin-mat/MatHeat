@@ -1,16 +1,15 @@
 import streamlit as st
-verification_code = "AB80dK3JTBXnG1NrBiN63vvm5LFqF6hlYeAocH2QCd8"
+gtm_code = """
+<!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-P8FDLQQB');</script>
+<!-- End Google Tag Manager -->
+"""
 
-st.markdown(f"""
-<script>
-   (function() {{
-    var meta = document.createElement('meta');
-    meta.name = 'google-site-verification';
-    meta.content = '{verification_code}';
-    document.head.appendChild(meta);
-}})();
-</script>
-""", unsafe_allow_html=True)
+st.markdown(gtm_code, unsafe_allow_html=True)
 import pandas as pd
 import numpy as np
 import json
