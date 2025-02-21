@@ -1,32 +1,31 @@
+MatHeat: Gene Expression Heatmap Generator
 
-MatHeat
+Welcome to MatHeat, a cutting-edge web application built with Streamlit for generating interactive gene expression heatmaps. Whether you're a biologist, bioinformatician, or data scientist, MatHeat helps you visualize gene expression data with advanced clustering, normalization, and pathway analysis features.
 
-MatHeat is a Streamlit-based gene expression heatmap generator that allows users to visualize gene expression data interactively. The app supports various file formats and includes features for data preprocessing, clustering, and pathway analysis.
+Try MatHeat Now: https://matheat.streamlit.app
 
-Features:
+Features
+- Upload Flexibility: Supports CSV, TSV, XLSX, H5/HDF5, and JSON file formats.
+- Preprocessing: Log transformation, k-NN imputation, and normalization (Z-score, MinMax, Quantile).
+- Clustering: KMeans and UMAP for grouping genes or samples.
+- Pathway Analysis: Reactome enrichment analysis via g:Profiler.
+- Interactive Heatmaps: Powered by Plotly for zooming, panning, and exporting (HTML/PNG).
 
-- File Formats: Supports input files in formats such as CSV, TSV, and more.
-- Preprocessing: Options for log transformation, imputation, and normalization of gene expression data.
-- Clustering: Implement KMeans and UMAP clustering for better visualization and analysis of gene expression patterns.
-- Pathway Analysis: Integrates with g:Profiler for Reactome pathway analysis.
-- Interactive Heatmaps: Generate interactive heatmaps using Plotly for detailed data visualization.
-- Export Options: Save heatmaps in various formats (HTML, PNG) for sharing and publication.
-- User-Friendly Interface: A clean and intuitive interface for seamless navigation.
+How to Use MatHeat
+1. Visit https://matheat.streamlit.app
+2. Upload your gene expression data file in the sidebar.
+3. Customize preprocessing, clustering, and analysis options.
+4. Generate and download your interactive heatmap.
 
-
-Usage:
-
-1. Upload your gene expression data file.
-2. Choose preprocessing options as needed.
-3. Select clustering methods and parameters.
-4. Generate the heatmap and explore interactive features.
-5. Export your results for further analysis.
-
-Contributing:
-
-Contributions are welcome! If you have suggestions for improvements or features, please open an issue or submit a pull request.
+Example
+Upload a dataset (e.g., gene expression matrix), apply log transformation, cluster with UMAP, and explore enriched Reactome pathways—all in a few clicks!
 
 
-Contact:
+Contributions
+Built by Seyyed Amin Seyyed Rezaei (https://scholar.google.com/citations?user=pOLJKt4AAAAJ&hl=en). Feedback and contributions welcome! Open an issue or submit a pull request on GitHub.
 
-For any inquiries or feedback, please reach out to your email or GitHub profile link.
+
+Keywords
+MatHeat, heatmap generator, gene expression heatmap, bioinformatics, data visualization, Streamlit app
+
+Deployed at: https://matheat.streamlit.app
