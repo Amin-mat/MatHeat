@@ -12,6 +12,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <!-- End Google Tag Manager -->
 </head>
 """, height=0)
+
 import pandas as pd
 import numpy as np
 import json
@@ -25,7 +26,6 @@ from gprofiler import GProfiler
 import plotly.express as px
 import plotly.io as pio
 
-# Attempt to import GPU acceleration library
 try:
     import cupy as cp
     GPU_AVAILABLE = True
@@ -34,14 +34,12 @@ except ImportError:
 
 class MatHeatmap:
     def __init__(self):
-        """Initialize the cutting-edge gene expression heatmap app."""
         st.title("MatHeat: Gene Expression Heatmap Generator")
         st.write(
             "Upload your gene expression data file (CSV, TSV, XLSX, H5/HDF5, or JSON) and customize advanced parameters."
         )
 
     def load_data(self, file_obj, filename):
-        """Load gene expression data from various file formats."""
         try:
             if filename.endswith('.csv'):
                 data = pd.read_csv(file_obj, index_col=0)
@@ -62,11 +60,9 @@ class MatHeatmap:
             return None
 
     def log_transform(self, data):
-        """Apply log transformation."""
         return np.log1p(data)
 
     def impute_missing_values(self, data, n_neighbors=5):
-        """Impute missing values using k-NN imputation."""
         try:
             imputer = KNNImputer(n_neighbors=n_neighbors)
             imputed = imputer.fit_transform(data)
@@ -76,7 +72,6 @@ class MatHeatmap:
             return data
 
     def normalize_data(self, data, method='zscore'):
-        """Normalize data using the selected method."""
         try:
             if method == 'zscore':
                 scaler = StandardScaler()
@@ -94,74 +89,65 @@ class MatHeatmap:
             return data
 
     def preprocess_data(self, data, apply_log, normalization_method, imputation_neighbors):
-        """Apply preprocessing steps: log transform, imputation, and normalization."""
         if apply_log:
             data = self.log_transform(data)
         data = self.impute_missing_values(data, n_neighbors=imputation_neighbors)
         data = self.normalize_data(data, method=normalization_method)
         return data
 
-    def cluster_data(self, data, clustering_method, n_clusters=5):
-        """
-        Perform clustering using either KMeans or UMAP (with subsequent KMeans).
-        For UMAP, both the clusters and the 2D embedding are returned.
-        """
+    def cluster_data(self, data, clustering_method, n_clusters=5, cluster_axis='samples'):
+        if cluster_axis == 'genes':
+            data_to_cluster = data  # Cluster rows (genes)
+            cluster_labels = list(data.index)
+            st.write(f"Clustering genes: Data shape = {data_to_cluster.shape}, expecting {len(data.index)} clusters")
+        else:  # samples
+            data_to_cluster = data.T  # Transpose to cluster columns (samples)
+            cluster_labels = list(data.columns)
+            st.write(f"Clustering samples: Data shape = {data_to_cluster.shape}, expecting {len(data.columns)} clusters")
+
         if clustering_method == "KMeans":
             try:
                 kmeans = KMeans(n_clusters=n_clusters, random_state=42)
-                clusters = kmeans.fit_predict(data)
-                return clusters
+                clusters = kmeans.fit_predict(data_to_cluster)
+                st.write(f"KMeans clusters: {len(clusters)} assignments, {len(set(clusters))} unique clusters")
+                cluster_dict = {cluster_labels[i]: clusters[i] for i in range(len(clusters))}
+                return clusters, cluster_dict
             except Exception as e:
                 st.error(f"Error during KMeans clustering: {e}")
-                return None
+                return None, None
         elif clustering_method == "UMAP":
             try:
-                reducer = umap.UMAP(n_components=2, random_state=42)
-                embedding = reducer.fit_transform(data)
+                reducer = UMAP(n_components=2, random_state=42)
+                embedding = reducer.fit_transform(data_to_cluster)
                 kmeans = KMeans(n_clusters=n_clusters, random_state=42)
                 clusters = kmeans.fit_predict(embedding)
-                return clusters, embedding
+                st.write(f"UMAP clusters: {len(clusters)} assignments, {len(set(clusters))} unique clusters")
+                cluster_dict = {cluster_labels[i]: clusters[i] for i in range(len(clusters))}
+                return clusters, cluster_dict
             except Exception as e:
                 st.error(f"Error during UMAP clustering: {e}")
-                return None
+                return None, None
         else:
             st.error("Unsupported clustering method.")
-            return None
+            return None, None
 
     def perform_enrichment_analysis(self, gene_list):
-        """
-        Perform Reactome pathway analysis using g:Profiler.
-        """
         try:
-            from gprofiler import GProfiler
             gp = GProfiler(return_dataframe=True)
-
-            # Ensure gene_list is valid
             if not gene_list:
-               st.error("No genes selected for enrichment analysis.")
-               return None
-
+                st.error("No genes selected for enrichment analysis.")
+                return None
             results = gp.profile(organism='hsapiens', query=gene_list, sources=['REAC'])
-
             if results.empty:
-               st.warning("No significant Reactome pathways found.")
-               return None
+                st.warning("No significant Reactome pathways found.")
+                return None
             results["Genes Queried"] = ', '.join(gene_list)
-
             return results
-            
-        except ImportError as e:
-            st.error(f"g:Profiler import error: {e}\nPlease install it using 'pip install gprofiler-official'.")
-            return None
         except Exception as e:
             st.error(f"Error during Reactome pathway analysis: {e}")
             return None
 
     def edge_detection(self, data):
-        """
-        Dummy edge detection using a simple gradient calculation.
-        In a real-world scenario, you might apply advanced techniques (e.g., OpenCV).
-        """
         try:
             grad_x = np.gradient(data.values, axis=0)
             grad_y = np.gradient(data.values, axis=1)
@@ -174,11 +160,11 @@ class MatHeatmap:
             st.error(f"Error during edge detection: {e}")
             return None
 
-    def generate_heatmap(self, data, clusters=None):
-        """Generate an interactive heatmap with adaptive color scaling."""
+    def generate_heatmap(self, data, clusters=None, cluster_dict=None, cluster_axis='samples'):
         try:
-            flat_vals = data.values.flatten()
-            vmin, vmax = np.percentile(flat_vals, 5), np.percentile(flat_vals, 95)
+            vmin, vmax = np.percentile(data.values.flatten(), 5), np.percentile(data.values.flatten(), 95)
+            st.write(f"Heatmap data shape: {data.shape}")
+
             fig = px.imshow(
                 data,
                 labels={"x": "Samples", "y": "Genes", "color": "Expression"},
@@ -187,18 +173,45 @@ class MatHeatmap:
                 zmin=vmin,
                 zmax=vmax,
                 color_continuous_scale='RdBu_r',
-                title="Cutting-Edge Gene Expression Heatmap"
+                title="Gene Expression Heatmap"
             )
-            if clusters is not None:
-                # Add cluster information in the hover text
-                fig.update_traces(customdata=clusters, hovertemplate='Cluster: %{customdata}<extra></extra>')
+
+            # If cluster_dict is provided, create custom hover data
+            if cluster_dict:
+                if cluster_axis == 'samples':
+                    # Create a 2D array for samples
+                    cluster_info = [[f"Cluster: {cluster_dict.get(sample, 'N/A')}" for sample in data.columns]] * len(data.index)
+                else:  # genes
+                    cluster_info = [[f"Cluster: {cluster_dict.get(gene, 'N/A')}"] * len(data.columns) for gene in data.index]
+
+                fig.update_traces(
+                    customdata=cluster_info,
+                    hovertemplate=(
+                        '<b>Sample</b>: %{x}<br>'
+                        '<b>Gene</b>: %{y}<br>'
+                        '<b>Expression</b>: %{z:.2f}<br>'
+                        '%{customdata}<extra></extra>'
+                    ),
+                    hoverinfo='text'
+                )
+            else:
+                st.write("No clusters provided")
+                fig.update_traces(
+                    hovertemplate=(
+                        '<b>Sample</b>: %{x}<br>'
+                        '<b>Gene</b>: %{y}<br>'
+                        '<b>Expression</b>: %{z:.2f}<extra></extra>'
+                    )
+                )
+
+            fig.update_layout(hovermode='closest')
             return fig
+
         except Exception as e:
             st.error(f"Error generating heatmap: {e}")
             return None
 
     def export_heatmap(self, fig, export_format="HTML"):
-        """Provide export options for the heatmap (HTML/PNG)."""
         try:
             if export_format == "HTML":
                 html_bytes = fig.to_html(include_plotlyjs='cdn')
@@ -212,18 +225,17 @@ class MatHeatmap:
             st.error(f"Error exporting heatmap: {e}")
 
     def run(self):
-        # Add a navigation section in the sidebar
         st.sidebar.title("Navigation")
         page = st.sidebar.radio("Go to", ["Home", "My Information", "Help", "Contact Us"])
 
         if page == "Home":
-            # Existing Home page content (upload & settings, data processing, visualization, etc.)
             st.sidebar.header("Upload & Settings")
             uploaded_file = st.sidebar.file_uploader("Upload Gene Expression Data", type=["csv", "tsv", "xlsx", "h5", "hdf5", "json"])
             apply_log = st.sidebar.checkbox("Apply Log Transformation", value=True)
             normalization_method = st.sidebar.selectbox("Normalization Method", ["zscore", "minmax", "quantile"])
             imputation_neighbors = st.sidebar.slider("Imputation: Number of Neighbors", min_value=1, max_value=10, value=5)
             clustering_method = st.sidebar.selectbox("Clustering Method", ["None", "KMeans", "UMAP"])
+            cluster_axis = st.sidebar.selectbox("Cluster", ["samples", "genes"]) if clustering_method != "None" else None
             n_clusters = st.sidebar.number_input("Number of Clusters", min_value=2, max_value=20, value=5)
             perform_enrichment = st.sidebar.checkbox("Perform Reactome Pathway Analysis", value=False)
             perform_edge_detection = st.sidebar.checkbox("Perform Edge Detection", value=False)
@@ -232,49 +244,48 @@ class MatHeatmap:
             if uploaded_file is not None:
                 data = self.load_data(uploaded_file, uploaded_file.name)
                 if data is None:
-                   return
+                    return
 
                 st.subheader("Data Preview")
+                st.write(f"Data shape: {data.shape} (rows = genes, columns = samples)")
                 st.dataframe(data.head())
 
-                # Preprocess data
                 data_processed = self.preprocess_data(data, apply_log, normalization_method, imputation_neighbors)
 
-                # Clustering (if selected)
-                clusters = None
+                clusters, cluster_dict = None, None
                 if clustering_method != "None":
-                    if clustering_method == "UMAP":
-                        result = self.cluster_data(data_processed, clustering_method, n_clusters)
-                        if result is not None:
-                           clusters, embedding = result
+                    clusters, cluster_dict = self.cluster_data(
+                        data_processed,
+                        clustering_method,
+                        n_clusters,
+                        cluster_axis
+                    )
+                    if clusters is not None:
+                        st.write(f"Clusters generated: {clusters}")
                     else:
-                        clusters = self.cluster_data(data_processed, clustering_method, n_clusters)
+                        st.error("Clustering failed, no clusters returned")
 
-                # Reactome pathway analysis (if selected)
                 enrichment_results = None
                 if perform_enrichment:
-                   gene_list = list(data_processed.index)
-                   enrichment_results = self.perform_enrichment_analysis(gene_list)
+                    gene_list = list(data_processed.index)
+                    enrichment_results = self.perform_enrichment_analysis(gene_list)
 
-                # Edge detection (if selected)
                 edge_info = None
                 if perform_edge_detection:
-                   edge_info = self.edge_detection(data_processed)
+                    edge_info = self.edge_detection(data_processed)
 
-                # Generate and display heatmap
-                fig = self.generate_heatmap(data_processed, clusters)
+                fig = self.generate_heatmap(data_processed, clusters, cluster_dict, cluster_axis)
                 if fig is not None:
-                   st.plotly_chart(fig)
-                   self.export_heatmap(fig, export_format)
+                    st.plotly_chart(fig)
+                    self.export_heatmap(fig, export_format)
 
-                # Display Reactome pathway analysis results in an expander
                 if perform_enrichment:
-                   with st.expander("Reactome Pathway Analysis Results", expanded=True):
+                    with st.expander("Reactome Pathway Analysis Results", expanded=True):
                         if isinstance(enrichment_results, pd.DataFrame):
                             st.dataframe(enrichment_results)
                             csv_data = enrichment_results.to_csv().encode("utf-8")
                             st.download_button(
-                               "Download Pathway Analysis Results as CSV",
+                                "Download Pathway Analysis Results as CSV",
                                 data=csv_data,
                                 file_name="reactome_pathway_analysis.csv",
                                 mime="text/csv"
@@ -282,13 +293,12 @@ class MatHeatmap:
                         else:
                             st.write(enrichment_results)
 
-                # Display edge detection summary in an expander
                 if perform_edge_detection:
                     with st.expander("Edge Detection Summary", expanded=True):
                         st.write(edge_info)
                         json_data = json.dumps(edge_info, indent=4)
                         st.download_button(
-                           "Download Edge Detection Summary as JSON",
+                            "Download Edge Detection Summary as JSON",
                             data=json_data,
                             file_name="edge_detection_summary.json",
                             mime="application/json"
@@ -312,7 +322,7 @@ class MatHeatmap:
         
             1. **Upload Data:** Use the sidebar to upload your gene expression data file in CSV, TSV, XLSX, H5/HDF5, or JSON format.
             2. **Preprocessing Options:** Choose whether to apply a log transformation, select your normalization method, and set imputation parameters.
-            3. **Clustering:** Select a clustering method (KMeans or UMAP) and configure the number of clusters.
+            3. **Clustering:** Select a clustering method (KMeans or UMAP) and choose whether to cluster samples or genes.
             4. **Additional Analyses:** Optionally perform Reactome pathway analysis or edge detection.
             5. **Visualization & Export:** Generate an interactive heatmap and export it as HTML or PNG.
             """)
@@ -329,7 +339,6 @@ class MatHeatmap:
             - [Twitter](https://twitter.com/yourhandle)
             - [LinkedIn](https://linkedin.com/in/yourprofile)
             """)
-
 
 if __name__ == '__main__':
     app = MatHeatmap()
