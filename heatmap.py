@@ -32,6 +32,11 @@ try:
 except ImportError:
     GPU_AVAILABLE = False
 
+# Cache the PNG conversion to speed up repeated downloads
+@st.cache_data
+def fig_to_png(fig):
+    return fig.to_image(format="png")
+
 class MatHeatmap:
     def __init__(self):
         st.title("MatHeat: Gene Expression Heatmap Generator")
@@ -217,8 +222,9 @@ class MatHeatmap:
                 html_bytes = fig.to_html(include_plotlyjs='cdn')
                 st.download_button("Download Heatmap as HTML", data=html_bytes, file_name="heatmap.html", mime="text/html")
             elif export_format == "PNG":
-                img_bytes = fig.to_image(format="png")
-                st.download_button("Download Heatmap as PNG", data=img_bytes, file_name="heatmap.png", mime="image/png")
+                # Use the cached conversion to speed up PNG export
+                png_bytes = fig_to_png(fig)
+                st.download_button("Download Heatmap as PNG", data=png_bytes, file_name="heatmap.png", mime="image/png")
             else:
                 st.error("Unsupported export format.")
         except Exception as e:
@@ -251,6 +257,8 @@ class MatHeatmap:
                 st.dataframe(data.head())
 
                 data_processed = self.preprocess_data(data, apply_log, normalization_method, imputation_neighbors)
+                
+                # Display and allow download of the processed data table
                 with st.expander("View Processed Data Table"):
                     st.dataframe(data_processed)
                     csv_data = data_processed.to_csv().encode("utf-8")
@@ -273,6 +281,20 @@ class MatHeatmap:
                         st.write(f"Clusters generated: {clusters}")
                     else:
                         st.error("Clustering failed, no clusters returned")
+                    
+                    # New section: Display a table of clusters and associated genes (or samples)
+                    if clusters is not None and cluster_dict is not None:
+                        # Determine if we're clustering genes or samples
+                        cluster_type = "Gene" if cluster_axis == "genes" else "Sample"
+                        clusters_table = {}
+                        for label, clus in cluster_dict.items():
+                            clusters_table.setdefault(clus, []).append(label)
+                        cluster_table_df = pd.DataFrame({
+                            "Cluster": list(clusters_table.keys()),
+                            f"{cluster_type}s": [", ".join(sorted(labels)) for labels in clusters_table.values()]
+                        })
+                        st.subheader(f"Cluster Assignments ({cluster_type}s)")
+                        st.dataframe(cluster_table_df)
 
                 enrichment_results = None
                 if perform_enrichment:
