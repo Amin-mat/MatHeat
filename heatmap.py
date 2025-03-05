@@ -251,6 +251,15 @@ class MatHeatmap:
                 st.dataframe(data.head())
 
                 data_processed = self.preprocess_data(data, apply_log, normalization_method, imputation_neighbors)
+                with st.expander("View Processed Data Table"):
+                    st.dataframe(data_processed)
+                    csv_data = data_processed.to_csv().encode("utf-8")
+                    st.download_button(
+                        label="Download Processed Data as CSV",
+                        data=csv_data,
+                        file_name="processed_data.csv",
+                        mime="text/csv"
+                    )
 
                 clusters, cluster_dict = None, None
                 if clustering_method != "None":
