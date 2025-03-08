@@ -5,7 +5,7 @@ Welcome to MatHeat, a cutting-edge web application built with Streamlit for gene
 Try MatHeat Now: https://matheat.streamlit.app
 
 Features
-- Upload Flexibility: Supports CSV, TSV, XLSX, H5/HDF5, and JSON file formats.
+- Upload Flexibility: Supports CSV, TSV, XLSX, and JSON file formats.
 - Preprocessing: Log transformation, k-NN imputation, and normalization (Z-score, MinMax, Quantile).
 - Clustering: KMeans and UMAP for grouping genes or samples.
 - Pathway Analysis: Reactome enrichment analysis via g:Profiler.
