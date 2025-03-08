@@ -6,4 +6,4 @@ scikit-learn
 gprofiler-official
 plotly
 kaleido
-
+openpyxl
