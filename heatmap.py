@@ -65,6 +65,8 @@ class MatHeatmap:
             return None
 
     def log_transform(self, data):
+        data = data.apply(pd.to_numeric, errors='coerce')
+        data = data.fillna(0.01)
         return np.log1p(data)
 
     def impute_missing_values(self, data, n_neighbors=5):
