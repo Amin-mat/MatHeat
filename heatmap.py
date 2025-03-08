@@ -41,7 +41,7 @@ class MatHeatmap:
     def __init__(self):
         st.title("MatHeat: Gene Expression Heatmap Generator")
         st.write(
-            "Upload your gene expression data file (CSV, TSV, XLSX, H5/HDF5, or JSON) and customize advanced parameters."
+            "Upload your gene expression data file (CSV, TSV, XLSX, or JSON) and customize advanced parameters."
         )
 
     def load_data(self, file_obj, filename):
@@ -239,7 +239,7 @@ class MatHeatmap:
 
         if page == "Home":
             st.sidebar.header("Upload & Settings")
-            uploaded_file = st.sidebar.file_uploader("Upload Gene Expression Data", type=["csv", "tsv", "xlsx", "h5", "hdf5", "json"])
+            uploaded_file = st.sidebar.file_uploader("Upload Gene Expression Data", type=["csv", "tsv", "xlsx", "json"])
             apply_log = st.sidebar.checkbox("Apply Log Transformation", value=True)
             normalization_method = st.sidebar.selectbox("Normalization Method", ["zscore", "minmax", "quantile"])
             imputation_neighbors = st.sidebar.slider("Imputation: Number of Neighbors", min_value=1, max_value=10, value=5)
@@ -354,7 +354,7 @@ class MatHeatmap:
             st.write("""
             **How to Use MatHeat: Gene Expression Heatmap Generator**
         
-            1. **Upload Data:** Use the sidebar to upload your gene expression data file in CSV, TSV, XLSX, H5/HDF5, or JSON format.
+            1. **Upload Data:** Use the sidebar to upload your gene expression data file in CSV, TSV, XLSX, or JSON format.
             2. **Preprocessing Options:** Choose whether to apply a log transformation, select your normalization method, and set imputation parameters.
             3. **Clustering:** Select a clustering method (KMeans or UMAP) and choose whether to cluster samples or genes.
             4. **Additional Analyses:** Optionally perform Reactome pathway analysis or edge detection.
