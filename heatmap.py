@@ -55,7 +55,8 @@ class MatHeatmap:
             elif filename.endswith('.h5') or filename.endswith('.hdf5'):
                 data = pd.read_hdf(file_obj)
             elif filename.endswith('.json'):
-                data = pd.read_json(file_obj)
+                data = pd.read_json(file_obj, orient="split")
+
             else:
                 st.error("Unsupported file format.")
                 return None
