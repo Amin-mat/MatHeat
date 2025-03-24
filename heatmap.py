@@ -370,7 +370,7 @@ class MatHeatmap:
             - **Email:** matheat.biology@gmail.com
         
             You can also follow us on social media:
-            - [Twitter](https://twitter.com/yourhandle)
+            - [Twitter](https://twitter.com/matheat_biology)
             - [LinkedIn](https://linkedin.com/in/yourprofile)
             """)
 
