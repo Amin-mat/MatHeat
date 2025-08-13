@@ -7,3 +7,4 @@ gprofiler-official
 plotly
 kaleido
 openpyxl
+statsmodels 
